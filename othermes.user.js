@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           OtherMes
-// @namespace      http://kodfabrik.se/userscripts/othermes/
+// @namespace      http://kodfabrik.se/othermes/
 // @description    Finds other social profiles of the current profile and shows them in the page.
 // @include        https://twitter.com/*
 // @include        http://twitter.com/*
