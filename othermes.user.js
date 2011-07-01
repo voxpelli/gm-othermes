@@ -20,7 +20,6 @@
 
 		for (i = 0, length = nodes.length; i < length; i++) {
 			node = nodes[i];
-			GM_log(node);
 			tweetmeta = node.querySelectorAll('.tweet-meta .extra-icons')[0];
 			max = 30;
 			for (site in data) {
