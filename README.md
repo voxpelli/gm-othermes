@@ -11,3 +11,8 @@ OtherMes is a Greasemonkey script that adds icons to tweets showing the Twitter 
 
 * [Script Website](http://kodfabrik.se/userscripts/othermes/)
 * [Greasemonkey](https://addons.mozilla.org/firefox/addon/greasemonkey/)
+
+## Support
+
+<a href="http://flattr.com/thing/332123/OtherMes" target="_blank">
+<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a>
