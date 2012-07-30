@@ -15,53 +15,75 @@
 		event.stopPropagation();
 	};
 	insertProfile = function (nodes, screenName) {
-		var max, i, length, node, site, link, image, tweetmeta, favicon, noFavicon = true;
-		data = cache[screenName];
+		console.log('Inserting icons for ' + screenName);
+
+		var max, i, length, node, listItem, link, image, listContainer, list, tweetmeta, noFavicon = true, data = cache[screenName];
 
 		for (i = 0, length = nodes.length; i < length; i++) {
 			node = nodes[i];
-			tweetmeta = node.querySelectorAll('.tweet-meta .extra-icons')[0];
-			max = 30;
-			for (site in data) {
-				if (data.hasOwnProperty(site)) {
-					if (!max--) {
-						break;
-					}
-					link = document.createElement('a');
-					link.href = site;
-					link.className = 'icon';
-					tweetmeta.appendChild(link);
-					link.addEventListener('click', stopIt, false);
-					link.style.width = '16px';
-					link.style.height = '16px';
-					noFavicon = true;
-					for (favicon in favicons) {
-						if (favicons.hasOwnProperty(favicon)) {
-							if ((new RegExp('https?:\\/\\/[\\w.]*' +favicon + '\\.com')).test(site)) {
-								link.style.background = 'url(' + favicons[favicon] + ') no-repeat center 0';
-								noFavicon = false;
-								break;
-							}
+			tweetmeta = node.querySelectorAll('.stream-item-footer')[0];
+
+			listContainer = document.createElement('div');
+			listContainer.className = 'stream-item-footer';
+			
+			// list = document.createElement('ul');
+			// list.className = 'tweet-actions js-actions';
+			// listContainer.appendChild(list);
+
+			data.forEach(function (site) {
+				var favicon;
+
+				if (site === 'http://twitter.com/' + screenName) {
+					console.log('Same Twitter user');
+					return;
+				}
+
+				console.log('Adding icon');
+
+				listItem = document.createElement('a');
+				listItem.href = site;
+				listItem.className = 'details with-icn js-details';
+				listContainer.appendChild(listItem);
+
+				link = document.createElement('span');
+				link.className = 'details-icon js-icon-container';
+				listItem.appendChild(link);
+
+				link.addEventListener('click', stopIt, false);
+				link.style.width = '16px';
+				link.style.height = '16px';
+				noFavicon = true;
+				for (favicon in favicons) {
+					if (favicons.hasOwnProperty(favicon)) {
+						if ((new RegExp('https?:\\/\\/[\\w.]*' + favicon + '\\.com')).test(site)) {
+							link.style.background = 'url(' + favicons[favicon] + ') no-repeat center 0';
+							noFavicon = false;
+							break;
 						}
 					}
-					if (noFavicon) {
-						link.style.background = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAKCAYAAABi8KSDAAAAOUlEQVR42qWPsQkAMAzDcnoO9E9pu5UIakINwosGO3ok5aZOB0PxIl9ydYby/wwe9BJJbHVAdIzkBe0E08uRQ876AAAAAElFTkSuQmCC) no-repeat center 3px';
-						image = document.createElement('img');
-						image.addEventListener('load', (function (link) {
-							return function () {
-								if (this.naturalHeight !== 0) {
-									link.style.background = 'none';
-								}
-							};
-						}(link)), false);
-						image.src = site.slice(0, 1 + site.indexOf('/', site.slice(0, 5) === 'https' ? 8 : 7)) + 'favicon.ico';
-						image.width = '16';
-						image.height = '16';
-						link.appendChild(image);
-						image.style.marginLeft = '0';
-						image.style.marginRight = '0';
-					}
 				}
+				if (noFavicon) {
+					link.style.display = 'block';
+					link.style.background = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAKCAYAAABi8KSDAAAAOUlEQVR42qWPsQkAMAzDcnoO9E9pu5UIakINwosGO3ok5aZOB0PxIl9ydYby/wwe9BJJbHVAdIzkBe0E08uRQ876AAAAAElFTkSuQmCC) no-repeat center 3px';
+					image = document.createElement('img');
+					image.addEventListener('load', (function (link) {
+						return function () {
+							if (this.naturalHeight !== 0) {
+								link.style.background = 'none';
+							}
+						};
+					}(link)), false);
+					image.src = site.slice(0, 1 + site.indexOf('/', site.slice(0, 5) === 'https' ? 8 : 7)) + 'favicon.ico';
+					image.width = '16';
+					image.height = '16';
+					link.appendChild(image);
+					image.style.marginLeft = '0';
+					image.style.marginRight = '0';
+				}
+			});
+
+			if (listContainer.childNodes.length) {
+				tweetmeta.parentNode.insertBefore(listContainer, tweetmeta);
 			}
 		}
 	};
@@ -77,16 +99,16 @@
 		return screenName;
 	};
 	fetchProfile = function (nodes, screenName) {
+		console.log('Fetching screenname ' + screenName);
 		if (cache[screenName]) {
 			insertProfile(nodes, screenName);
-		}
-		else {
+		} else {
 			GM_xmlhttpRequest({
-				method:"GET",
-				url:'https://socialgraph.googleapis.com/otherme?q=http://twitter.com/'+screenName,
-				onload:function(details) {
-					if (details.readyState == 4 && (details.status == 200 || details.status == 0)) {
-						cache[screenName] = JSON.parse(details.responseText);
+				method : "GET",
+				url : 'http://relspider.heroku.com/api/lookup?url=http://twitter.com/' + screenName,
+				onload : function (details) {
+					if (details.readyState === 4 && (details.status === 200 || details.status === 0)) {
+						cache[screenName] = JSON.parse(details.responseText).related;
 						insertProfile(nodes, screenName);
 					}
 				}
@@ -94,9 +116,9 @@
 		}
 	};
 	findProfiles = function (event) {
-		var node, tweets;
+		var node, tweets, length;
 		node = event.target;
-		tweets = node.querySelectorAll('.stream-tweet:not(.othermes)');
+		tweets = node.querySelectorAll('.js-stream-tweet:not(.othermes), .permalink-tweet:not(.othermes)');
 		length = tweets.length;
 		if (length) {
 			newTweets = true;
@@ -108,7 +130,8 @@
 	setInterval(function () {
 		var tweets, length, i, screenName, profiles = {};
 		if (newTweets === true) {
-			tweets = document.querySelectorAll('.stream-tweet:not(.othermes)');
+			console.log('Checking tweets!');
+			tweets = document.querySelectorAll('.js-stream-tweet:not(.othermes), .permalink-tweet:not(.othermes)');
 			length = tweets.length;
 			for (i = 0; i < length; i++) {
 				tweets[i].className = tweets[i].className + ' othermes';
@@ -126,4 +149,5 @@
 			newTweets = false;
 		}
 	}, 100);
+	findProfiles({target : document});
 }());
