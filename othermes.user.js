@@ -1,9 +1,8 @@
 // ==UserScript==
-// @name           OtherMes
-// @namespace      http://kodfabrik.se/othermes/
+// @name           OtherMes – GitHub Edition
+// @namespace      http://kodfabrik.se/othermes/github/
 // @description    Finds other social profiles of the current profile and shows them in the page.
-// @include        https://twitter.com/*
-// @include        http://twitter.com/*
+// @include        https://github.com/*
 // ==/UserScript==
 
 (function () {
@@ -17,40 +16,48 @@
 	insertProfile = function (nodes, screenName) {
 		console.log('Inserting icons for ' + screenName);
 
-		var max, i, length, node, listItem, link, image, listContainer, list, tweetmeta, noFavicon = true, data = cache[screenName];
+		var max, i, length, node, listItem, link, image, listContainer, header, list, meta, noFavicon = true, data = cache[screenName];
+
+		if (!data.length) {
+			return;
+		}
 
 		for (i = 0, length = nodes.length; i < length; i++) {
 			node = nodes[i];
-			tweetmeta = node.querySelectorAll('.stream-item-footer')[0];
+			meta = node.parentNode.querySelectorAll('.profilecols .last')[0];
 
-			listContainer = document.createElement('div');
-			listContainer.className = 'stream-item-footer';
-			
-			// list = document.createElement('ul');
-			// list.className = 'tweet-actions js-actions';
-			// listContainer.appendChild(list);
+			listContainer = meta.querySelectorAll('.following');
+			if (listContainer.length) {
+				listContainer = listContainer[0]
+				meta.appendChild(listContainer);
+			} else {
+				listContainer = document.createElement('div');
+				listContainer.className = 'following';
+			}
+
+			header = document.createElement('h3');
+			header.textContent = 'Other profiles';
+			header.style.marginTop = '12px';
+			listContainer.appendChild(header);
+
+			list = document.createElement('ul');
+			list.className = 'avatars';
 
 			data.forEach(function (site) {
 				var favicon;
 
-				if (site === 'http://twitter.com/' + screenName) {
-					console.log('Same Twitter user');
+				if (site === 'http://github.com/' + screenName) {
 					return;
 				}
 
-				console.log('Adding icon');
+				listItem = document.createElement('li');
+				list.appendChild(listItem);
 
-				listItem = document.createElement('a');
-				listItem.href = site;
-				listItem.className = 'details with-icn js-details';
-				listContainer.appendChild(listItem);
-
-				link = document.createElement('span');
-				link.className = 'details-icon js-icon-container';
+				link = document.createElement('a');
+				link.href = site;
 				listItem.appendChild(link);
 
 				link.addEventListener('click', stopIt, false);
-				link.style.display = 'block';
 				link.style.width = '16px';
 				link.style.height = '16px';
 				noFavicon = true;
@@ -64,7 +71,6 @@
 					}
 				}
 				if (noFavicon) {
-					link.style.background = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAKCAYAAABi8KSDAAAAOUlEQVR42qWPsQkAMAzDcnoO9E9pu5UIakINwosGO3ok5aZOB0PxIl9ydYby/wwe9BJJbHVAdIzkBe0E08uRQ876AAAAAElFTkSuQmCC) no-repeat center 3px';
 					image = document.createElement('img');
 					image.addEventListener('load', (function (link) {
 						return function () {
@@ -76,27 +82,18 @@
 					image.src = site.slice(0, 1 + site.indexOf('/', site.slice(0, 5) === 'https' ? 8 : 7)) + 'favicon.ico';
 					image.width = '16';
 					image.height = '16';
-					link.appendChild(image);
+					image.style.display = 'inline-block';
 					image.style.marginLeft = '0';
 					image.style.marginRight = '0';
+					link.appendChild(image);
 				}
 			});
 
-			if (listContainer.childNodes.length) {
-				tweetmeta.parentNode.insertBefore(listContainer, tweetmeta);
-			}
+			listContainer.appendChild(list);
 		}
 	};
 	fetchScreenName = function (node) {
-		var screenName, i, length;
-		length = node.attributes.length;
-		for (i = 0; i < length; i++) {
-			if (node.attributes[i].name === 'data-screen-name') {
-				screenName = node.attributes[i].value;
-				break;
-			}
-		}
-		return screenName;
+		return node.querySelectorAll('span.username')[0].textContent;
 	};
 	fetchProfile = function (nodes, screenName) {
 		console.log('Fetching screenname ' + screenName);
@@ -105,7 +102,7 @@
 		} else {
 			GM_xmlhttpRequest({
 				method : "GET",
-				url : 'http://relspider.heroku.com/api/lookup?url=http://twitter.com/' + screenName,
+				url : 'http://relspider.heroku.com/api/lookup?url=http://github.com/' + screenName,
 				onload : function (details) {
 					if (details.readyState === 4 && (details.status === 200 || details.status === 0)) {
 						cache[screenName] = JSON.parse(details.responseText).related;
@@ -118,20 +115,20 @@
 	findProfiles = function (event) {
 		var node, tweets, length;
 		node = event.target;
-		tweets = node.querySelectorAll('.js-stream-tweet:not(.othermes), .permalink-tweet:not(.othermes)');
+		tweets = node.querySelectorAll('.userpage:not(.othermes)');
 		length = tweets.length;
 		if (length) {
 			newTweets = true;
 		}
 	};
-	document.body.addEventListener("DOMNodeInserted", function (event) {
-		findProfiles(event);
-	}, false);
+	// document.body.addEventListener("DOMNodeInserted", function (event) {
+	// 	findProfiles(event);
+	// }, false);
 	setInterval(function () {
 		var tweets, length, i, screenName, profiles = {};
 		if (newTweets === true) {
-			console.log('Checking tweets!');
-			tweets = document.querySelectorAll('.js-stream-tweet:not(.othermes), .permalink-tweet:not(.othermes)');
+			console.log('Checking github!');
+			tweets = document.querySelectorAll('.userpage:not(.othermes)');
 			length = tweets.length;
 			for (i = 0; i < length; i++) {
 				tweets[i].className = tweets[i].className + ' othermes';
