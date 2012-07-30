@@ -50,6 +50,7 @@
 				listItem.appendChild(link);
 
 				link.addEventListener('click', stopIt, false);
+				link.style.display = 'block';
 				link.style.width = '16px';
 				link.style.height = '16px';
 				noFavicon = true;
@@ -63,7 +64,6 @@
 					}
 				}
 				if (noFavicon) {
-					link.style.display = 'block';
 					link.style.background = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAKCAYAAABi8KSDAAAAOUlEQVR42qWPsQkAMAzDcnoO9E9pu5UIakINwosGO3ok5aZOB0PxIl9ydYby/wwe9BJJbHVAdIzkBe0E08uRQ876AAAAAElFTkSuQmCC) no-repeat center 3px';
 					image = document.createElement('img');
 					image.addEventListener('load', (function (link) {
