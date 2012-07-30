@@ -102,7 +102,7 @@
 		} else {
 			GM_xmlhttpRequest({
 				method : "GET",
-				url : 'http://relspider.heroku.com/api/lookup?url=http://github.com/' + screenName,
+				url : 'http://relspider.herokuapp.com/api/lookup?url=http://github.com/' + screenName,
 				onload : function (details) {
 					if (details.readyState === 4 && (details.status === 200 || details.status === 0)) {
 						cache[screenName] = JSON.parse(details.responseText).related;
