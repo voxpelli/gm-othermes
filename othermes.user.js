@@ -33,7 +33,7 @@
 			data.forEach(function (site) {
 				var favicon;
 
-				if (site === 'http://twitter.com/' + screenName) {
+				if (site === 'https://twitter.com/' + screenName) {
 					console.log('Same Twitter user');
 					return;
 				}
@@ -105,7 +105,7 @@
 		} else {
 			GM_xmlhttpRequest({
 				method : "GET",
-				url : 'http://relspider.herokuapp.com/api/lookup?url=http://twitter.com/' + screenName,
+				url : 'http://relspider.herokuapp.com/api/lookup?url=https://twitter.com/' + screenName,
 				onload : function (details) {
 					if (details.readyState === 4 && (details.status === 200 || details.status === 0)) {
 						cache[screenName] = JSON.parse(details.responseText).related;
