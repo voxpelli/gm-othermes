@@ -31,7 +31,7 @@
 			// list.className = 'tweet-actions js-actions';
 			// listContainer.appendChild(list);
 
-			data.forEach(function (site) {
+			data.sort().forEach(function (site) {
 				var favicon;
 
 				if (site === 'https://twitter.com/' + screenName) {
