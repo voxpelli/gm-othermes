@@ -4,6 +4,7 @@
 // @description    Finds other social profiles of the current profile and shows them in the page.
 // @include        https://twitter.com/*
 // @include        http://twitter.com/*
+// @grant          GM_xmlhttpRequest
 // ==/UserScript==
 
 (function () {
